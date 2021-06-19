@@ -8,7 +8,7 @@ class Task {
       this.priority = priority;
   }
 }
-
+// todo make buttons pretty 
 // todo make buttons only appear when hovering
 function Trashbutton({size = 'small-button'}){
   return <input type="button" className={`trash ${size}`}></input>
@@ -80,7 +80,9 @@ for(let i = 0; i < 5; i++){
 taskList[5] = new Task(`task ${6}`, 'high');
 
 function App() {
-  return (<Todo taskList={taskList}></Todo>);
+  return (
+    <div id="todo-container"><Todo taskList={taskList}/></div>
+  );
 }
 
 export default App;

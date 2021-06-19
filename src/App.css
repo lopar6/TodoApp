@@ -36,6 +36,13 @@ html, body {
   background-repeat: no-repeat;
 }
 
+.edit{
+  background-color: #ffffff05 !important;
+  background-image: url(edit-icon.png);
+  background-size: 100%;
+  background-repeat: no-repeat;
+}
+
 .low-border {
   border: 10px;
   border-radius: 20px;
@@ -66,9 +73,9 @@ html, body {
 .task-box {
   display: inherit;
   background-color: #08050c;
-  text-align: center;
+  align-items: center;
   width: 400px;
-  height: 50px;
+  height: 30px;
   padding: 10px;
   margin: 8px;
 }
@@ -85,8 +92,6 @@ html, body {
 
 .edit-buttons{
   display: inherit;
-  /* flex-direction: column; */
-  align-self:flex-end;
 }
 
 .title-display{
