@@ -71,7 +71,7 @@ html, body {
 }
 
 .task-box {
-  display: inherit;
+  display: flex;
   background-color: #08050c;
   align-items: center;
   width: 400px;
@@ -95,7 +95,7 @@ html, body {
 }
 
 .title-display{
-  width: 340px;
+  width: 360px;
 }
 
 #todo-container{
