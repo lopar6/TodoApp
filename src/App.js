@@ -11,15 +11,20 @@ class Task extends React.Component{
     super(props)
     this.state = { 
       title: props.title, 
-      priority: props.priority
+      priority: props.priority,
+      showButtons: null,
     }
+
     // needed to make 'this' work in callback
+    // this is the old way of doing things before arrow functions were introduced (=>)
     this.changePriorityState = this.changePriorityState.bind(this);
-    this.changeTitle = this.changeTitle.bind(this);
+    this.changeTitle         = this.changeTitle.bind(this);
+    this.renderButtons       = this.renderButtons.bind(this);
+    this.deRenderButtons     = this.deRenderButtons.bind(this);
   }
 
   // take in Task object, change priority
-  // todo fix currently renders whole app, only render this one element
+  // todo find a way to avoid repeating this
   changePriorityState() {
     if(this.state.priority == 'low'){
       this.setState({priority : 'medium'})
@@ -43,53 +48,28 @@ class Task extends React.Component{
     // move self to another place on list
   }
 
+  renderButtons(){
+    this.setState({showButtons: true})
+  }
+  
+  deRenderButtons(){
+    setTimeout(() => this.setState({showButtons: false}), 500)
+  }
+
+  //todo ask Nate the best structure for deleting tasks
   render() {
     return ( 
-        //todo change the 'onChange' to something that exicutes after user is done for more effdeciency
-      <div className={`task-box ${this.state.priority}-border`} onClick={this.moveElement} >
-        <input type="text" className={"title-display"} onChange={this.changeTitle} value={this.state.title}/>
-          <div className="edit-buttons" >
-            <PriorityButton size={"small-button"} priority={this.state.priority} click={this.changePriorityState}/>
+      <div className={`task-box ${this.state.priority}-border`} onClick={this.moveElement} onMouseOver={this.renderButtons} onMouseLeave={this.deRenderButtons}>
+        <input type="text" className={"title-display white-font"} onChange={this.changeTitle} value={this.state.title}/>
+          {this.state.showButtons ? <div className="edit-buttons" >
             <Trashbutton/>
-          </div>
+            <PriorityButton size={"small-button"} priority={this.state.priority} click={this.changePriorityState}/>
+          </div>: null}
       </div>
     )
   }
 }
 
-class PriorityButton extends React.Component{
-  constructor(props){
-    super(props)
-    this.state = { 
-      priority: props.priority
-    }
-    this.click = props.click
-    this.size = props.size
-    this.changePriorityState = this.changePriorityState.bind(this);
-  }
-  
-  changePriorityState() {
-    if(this.state.priority == 'low'){
-      this.setState({priority : 'medium'})
-    }
-    if(this.state.priority == 'medium'){
-      this.setState({priority : 'high'})    
-    }
-    if(this.state.priority == 'high'){
-      this.setState({priority : 'low'})    
-    }
-  }
-  
-  render(){
-    return( <input 
-      type="button" 
-      className={`input-button ${this.state.priority ? this.state.priority : "low"} ${this.size}`} 
-      // todo ask Nate why I cant move this.click into another function
-      onClick={this.click ? this.click : this.changePriorityState}/>
-      )
-    }
-  }
-  
 class Todo extends React.Component{
   constructor(props){
     super(props)
@@ -100,27 +80,60 @@ class Todo extends React.Component{
     this.state = {
       //temp for testing
       //replace with api call
-      taskDivs: _tempDivs
+      taskDivs: _tempDivs,
+      newTaskTitle: '',
+      newTaskPriority: 'low',
     } 
-    this.addNewTask = this.addNewTask.bind(this)
   }
   
-  addNewTask(event){
-    // concat returns a new array with whatever was passed in added on
-    let _previousTaskDivs = this.state.taskDivs.concat(<Task title="new task" priority='low'/>)
-    this.setState({taskDivs: _previousTaskDivs})
-    //todo change value with API call
+  // dont need to bind method when using arrow functions
+  // it helps Javascript understand the context
+  addNewTask = (event) => {
+    if(this.state.newTaskTitle && this.state.newTaskTitle != ''){
+      // concat returns a new array with whatever was passed in added on
+      let _previousTaskDivs = this.state.taskDivs.concat(<Task title={this.state.newTaskTitle} priority={this.state.newTaskPriority}/>)
+      // why wont this work
+      // let _previousTaskDivs = [<Task title={this.state.newTaskTitle} priority={this.state.newTaskPriority}/>].concat(this.state.taskDivs)
+      this.setState({
+        taskDivs: _previousTaskDivs,
+        newTaskTitle: '',
+        newTaskPriority: 'low',
+      })
+      //todo change values with API call
+    }
   }
 
+  removeTask = () => {
+    let _tempTaskDivs = this.state.taskDivs;
+    // _tempTaskDivs.
+    // this.setState(taskDivs:)
+  }
+  
+  changeNewTaskTitle = (event) => {
+    this.setState({ newTaskTitle: event.target.value})
+  }
+  
+  changeNewTaskPriority = () =>{
+    if(this.state.newTaskPriority == 'low'){
+      this.setState({newTaskPriority : 'medium'})
+    }
+    else if(this.state.newTaskPriority == 'medium'){
+      this.setState({newTaskPriority : 'high'})    
+    }
+    else if(this.state.newTaskPriority == 'high'){
+      this.setState({newTaskPriority : 'low'})    
+    }
+  }
+  
   render(){
     return(
       <div>
         <div id="new-todo-box">
           <form id="new-task-form">
-            <input type="text" id="new-task-title" placeholder="Enter a new task">
+            <input type="text" id="new-task-title" placeholder="Enter a new task" onChange={this.changeNewTaskTitle} value={this.state.newTaskTitle}>
             </input>
             <div id="priority-buttons">
-                <PriorityButton priority={'low'}/>
+                <PriorityButton priority={this.state.newTaskPriority} click={this.changeNewTaskPriority}/>
                 <input type="button" className={`input-button submit`} value="save" onClick={this.addNewTask}></input>
             </div>
           </form>
@@ -131,9 +144,16 @@ class Todo extends React.Component{
   }
   
 }
-
+// props.priority ? props.priority : "low"
 // todo make buttons pretty 
-// todo make buttons only appear when hovering
+function PriorityButton(props){
+  return( <input 
+    type="button" 
+    className={`input-button ${props.priority} ${props.size}`} 
+    onClick={props.click}/>
+    )
+}
+
 function Trashbutton({size = 'small-button', click}){
   return <input type="button" className={`trash ${size}`} onClick={click}></input>
 }

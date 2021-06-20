@@ -17,6 +17,10 @@ html, body {
   width: 100%;
 }
 
+.white-font{
+  color: #ffffff !important;
+}
+
 .low{
   background-color: #274862;
 }
@@ -84,6 +88,7 @@ html, body {
   width: 100px !important;
 }
 
+/* todo make buttons fade in/out */
 .input-button{
   border-radius: 40px;
   height: 40px;
@@ -92,12 +97,13 @@ html, body {
 
 .edit-buttons{
   display: inherit;
+  flex-direction: column;
   margin-left: 5px;
 }
 
 .title-display{
   font-size: inherit;
-  width: 360px;
+  width: 380px;
   border: none;
   background-color: inherit;
 }
