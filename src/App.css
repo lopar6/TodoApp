@@ -92,10 +92,14 @@ html, body {
 
 .edit-buttons{
   display: inherit;
+  margin-left: 5px;
 }
 
 .title-display{
+  font-size: inherit;
   width: 360px;
+  border: none;
+  background-color: inherit;
 }
 
 #todo-container{
