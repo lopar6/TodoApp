@@ -1,7 +1,7 @@
-import './App.css';
-import ReactDOM from 'react-dom';
-import React from 'react';
-import reactDom from 'react-dom';
+import './App.css'
+import React from 'react'
+import {DragDropContext, Droppable, Draggable} from 'react-beautiful-dnd'
+import reactDom from 'react-dom'
 
 // todo move png to public
 // todo check for first time visit and give them a little tour
@@ -24,11 +24,13 @@ class Task extends React.Component{
     this.deRenderButtons     = this.deRenderButtons.bind(this);
   }
 
+  // todo update this, is depricated
   componentWillReceiveProps({title, taskID, priority}){
     this.setState({
       title: title,
       taskID: taskID,
       priority: priority,
+      // may need to add ref to this
     })
   }
 
@@ -77,7 +79,8 @@ class Task extends React.Component{
       <div className={`task-box ${this.state.priority}-border`} 
            onClick={this.moveElement} 
            onMouseOver={this.renderButtons} 
-           onMouseLeave={this.deRenderButtons}>
+           onMouseLeave={this.deRenderButtons}
+           ref={this.props.innerRef}>
         <input type="text" 
                className={"title-display white-font"} 
                onChange={this.changeTitle} 
@@ -98,7 +101,10 @@ class Todo extends React.Component{
     super(props)
     let _tempDivs = []
     for(let i=0; i < 5; i++){
-      _tempDivs.push(<Task title={`task ${i + 1}`} priority='low' taskID={i} removeTask={this.removeTask}/>)
+      _tempDivs.push(<Task title={`task ${i + 1}`} 
+                           priority='low' 
+                           taskID={i} 
+                           removeTask={this.removeTask}/>)
     }
     this.state = {
       //temp for testing
@@ -162,7 +168,8 @@ class Todo extends React.Component{
     event.preventDefault()
     this.addNewTask(event)
   }
-  
+
+
   render(){
     return(
       <div>
@@ -187,7 +194,25 @@ class Todo extends React.Component{
             </div>
           </form>
         </div>
-        {this.state.taskDivs}
+        <DragDropContext>
+          <Droppable droppableId="task-box-container">
+            {(provided) => (<div className="task-box-container" 
+                                {...provided.droppableProps} 
+                                ref={provided.innerRef}>{this.state.taskDivs.map((task, index) => {
+                                  return (
+                                    // may need to make this state and not props
+                                    <Draggable key={task.props.taskID} draggableId={toString(task.props.taskID)} index={index}>
+                                      {(provided) => <Task {...task.props}{...provided.draggableProps} {...provided.dragHandleProps} innerRef={provided.innerRef} ></Task>}
+                                      {/* {(provided) => React.cloneElement(task, {...provided.draggableProps, 
+                                                                                ref : provided.innerRef, 
+                                                                                ...provided.dragHandleProps})} */}
+                                    </Draggable>
+                                  ) 
+                                }
+                              )}
+                            </div>)}
+          </Droppable>
+        </DragDropContext>
       </div>
     )
   }
