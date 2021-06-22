@@ -1,7 +1,7 @@
 import './App.css'
 import React from 'react'
-import {DragDropContext, Droppable, Draggable} from 'react-beautiful-dnd'
-import reactDom from 'react-dom'
+import { useDrag } from 'react-dnd'
+// import { ItemTypes } from './Constants'
 
 // todo move png to public
 // todo check for first time visit and give them a little tour
@@ -76,7 +76,7 @@ class Task extends React.Component{
   //todo ask Nate the best structure for deleting tasks
   render() {
     return ( 
-      <div className={`task-box ${this.state.priority}-border`} 
+      <div className={`task-box ${this.state.priority}-border`} ref={this.props.drag} 
            onClick={this.moveElement} 
            onMouseOver={this.renderButtons} 
            onMouseLeave={this.deRenderButtons}
@@ -169,6 +169,16 @@ class Todo extends React.Component{
     this.addNewTask(event)
   }
 
+  //this doesnt work with class components
+  //todo change Task to function using hooks
+  // // draggableTask(){
+  // //   const [{ isDragging, drag}] = useDrag(() => ({
+  // //     type: Task,
+  // //     collect: monitor => ({
+  // //       isDragging: !!monitor.isDragging(),
+  // //     })
+  // //   }))
+  // // }
 
   render(){
     return(
@@ -194,25 +204,9 @@ class Todo extends React.Component{
             </div>
           </form>
         </div>
-        <DragDropContext>
-          <Droppable droppableId="task-box-container">
-            {(provided) => (<div className="task-box-container" 
-                                {...provided.droppableProps} 
-                                ref={provided.innerRef}>{this.state.taskDivs.map((task, index) => {
-                                  return (
-                                    // may need to make this state and not props
-                                    <Draggable key={task.props.taskID} draggableId={toString(task.props.taskID)} index={index}>
-                                      {(provided) => <Task {...task.props}{...provided.draggableProps} {...provided.dragHandleProps} innerRef={provided.innerRef} ></Task>}
-                                      {/* {(provided) => React.cloneElement(task, {...provided.draggableProps, 
-                                                                                ref : provided.innerRef, 
-                                                                                ...provided.dragHandleProps})} */}
-                                    </Draggable>
-                                  ) 
-                                }
-                              )}
-                            </div>)}
-          </Droppable>
-        </DragDropContext>
+        <div className="task-box-container">
+          {this.state.taskDivs}
+        </div>
       </div>
     )
   }
@@ -230,17 +224,6 @@ function PriorityButton(props){
 
 function Trashbutton({size = 'small-button', removeTask}){
   return <input type="button" className={`trash ${size}`} onClick={removeTask}></input>
-}
-
-function NewTaskForm({saveButtonCall}){
-  return <form id="new-task-form">
-      <input type="text" id="new-task-title" placeholder="Enter a new task"></input>
-      <div id="priority-buttons">
-          <PriorityButton priority={'low'}/>
-          <input type="button" className={`input-button submit`} value="save" onClick={saveButtonCall}></input>
-       </div>
-
-  </form>
 }
   
   function App() {
