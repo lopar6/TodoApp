@@ -1,7 +1,9 @@
 import './App.css'
-import React, {useEffect, useState, useRef} from 'react'
-import { useDrag } from 'react-dnd'
+import React, {useEffect, useState, useRef, Children} from 'react'
+import { useDrag, DndProvider, useDrop } from 'react-dnd'
+import { HTML5Backend } from 'react-dnd-html5-backend'
 // import { ItemTypes } from './Constants'
+
 
 // todo move png to public
 // todo check for first time visit and give them a little tour
@@ -12,11 +14,20 @@ function Task(props) {
   const [showButtons, setButtonShow] = React.useState(null)  
 
 
+  const [{isDragging}, drag] = useDrag(() => ({
+    type: 'Task',
+    collect: monitor => ({
+      isDragging: !!monitor.isDragging(),
+    })
+  }))
+
   return ( 
     <div className={`task-box ${priority}-border`}
       // onClick={this.moveElement} 
       onMouseOver={() => setButtonShow(true)}
-      onMouseLeave={() => setTimeout(() => setButtonShow(false), 500)}>
+      onMouseLeave={() => setTimeout(() => setButtonShow(false), 500)}
+      style={{opacity: isDragging ? 0.5 : 1, cursor: 'move'}}
+      ref={drag}>
         <input type="text" 
                className={"title-display white-font"} 
                onChange={(event) => setTitle(event.target.value)} 
@@ -31,14 +42,28 @@ function Task(props) {
       </div>
     )    
 } 
-
-
+  
+  
 function cyclePriority(priority) {
   if (priority == 'low')   {return 'medium'}
   if (priority == 'medium'){return 'high'}
   if (priority == 'high')  {return 'low'}    
 }
 
+// monitor.getItem() <- maybe use this to get task being handled
+
+function TaskDropContainer(props) {
+  const [, drop] = useDrop(
+    () => ({
+      accept: 'Task',
+      // (drop spot value , dropee value )
+      drop: () => props.moveTask(props.task.props.keyValue)
+    })
+  )
+  return(
+    <div ref={drop}>{props.task}</div>
+  )
+}
 
 class Todo extends React.Component{
   constructor(props){
@@ -51,7 +76,8 @@ class Todo extends React.Component{
       newTaskPriority: 'low',
     } 
   }
-  
+
+
   // dont need to bind method when using arrow functions
   // it helps Javascript understand the context
   addNewTask = (event) => {
@@ -60,14 +86,17 @@ class Todo extends React.Component{
       // key needs to be completely unique and unchanging
       // todo replace _key with value from api
       let _key = Math.floor(Math.random()* 100000)
-      let _previousTaskDivs = this.state.taskDivs.concat(<Task title={this.state.newTaskTitle} 
-                                                               priority={this.state.newTaskPriority} 
-                                                               removeTask={this.removeTask}
-                        // key helps React identify individual components
-                        // Without it React doesnt understand what component is what when array is mutated
-                                                               key={_key}
-                                                               keyValue={_key}/>
-                                                               )
+      let _previousTaskDivs = this.state.taskDivs.concat(
+        <TaskDropContainer moveTask={this.moveTask}
+                           task={<Task title={this.state.newTaskTitle} 
+                           priority={this.state.newTaskPriority} 
+                           removeTask={this.removeTask}
+                           // key helps React identify individual components
+                           // Without it React doesnt understand what component is what when array is mutated
+                           key={_key}
+                           keyValue={_key}/>}>
+        </TaskDropContainer>
+      )
       // why wont this work
       // let _previousTaskDivs = [<Task title={this.state.newTaskTitle} priority={this.state.newTaskPriority}/>].concat(this.state.taskDivs)
       this.setState({
@@ -77,6 +106,18 @@ class Todo extends React.Component{
       })
       //todo change values with API call
     }
+  }
+
+  //right now it just puts a new task at the end
+  moveTask = (key) => {
+    let newTaskDivs = this.state.taskDivs.concat(<Task title={this.state.newTaskTitle} 
+                    priority={this.state.newTaskPriority} 
+                    removeTask={this.removeTask}
+              // key helps React identify individual components
+              // Without it React doesnt understand what component is what when array is mutated
+                    key={0}
+                    keyValue={0}/>)
+    this.setState({taskDivs: newTaskDivs})
   }
 
   // this could be more efficient
@@ -118,44 +159,39 @@ class Todo extends React.Component{
     this.addNewTask(event)
   }
 
-  //this doesnt work with class components
-  // // draggableTask(){
-  // //   const [{ isDragging, drag}] = useDrag(() => ({
-  // //     type: Task,
-  // //     collect: monitor => ({
-  // //       isDragging: !!monitor.isDragging(),
-  // //     })
-  // //   }))
-  // // }
 
   render(){
     return(
-      <div>
-        <div id="new-todo-box">
-          <form id="new-task-form"
-                onSubmit={this.handleSubmission}>
-            <input type="text" 
-                   id="new-task-title" 
-                   placeholder="Enter a new task" 
-                   onChange={this.changeNewTaskTitle} 
-                   value={this.state.newTaskTitle} 
-                   removeTask={this.removeTask}>
-            </input>
-            <div id="priority-buttons">
-                <PriorityButton priority={this.state.newTaskPriority} 
-                                click={this.changeNewTaskPriority}/>
-                <input type="button" 
-                       className={`input-button submit`} 
-                       value="save" 
-                       onClick={this.addNewTask}>
-                </input>
-            </div>
-          </form>
+      <DndProvider backend={HTML5Backend} >
+        <div>
+          <div id="new-todo-box">
+            <form id="new-task-form"
+                  onSubmit={this.handleSubmission}>
+              <input type="text" 
+                    id="new-task-title" 
+                    placeholder="Enter a new task" 
+                    onChange={this.changeNewTaskTitle} 
+                    value={this.state.newTaskTitle} 
+                    removeTask={this.removeTask}>
+              </input>
+              <div id="priority-buttons">
+                  <PriorityButton priority={this.state.newTaskPriority} 
+                                  click={this.changeNewTaskPriority}/>
+                  <input type="button" 
+                        className={`input-button submit`} 
+                        value="save" 
+                        onClick={this.addNewTask}>
+                  </input>
+              </div>
+            </form>
+          </div>
+          <div className="task-box-container">
+
+            {this.state.taskDivs}
+            <TaskDropContainer moveTask={this.moveTask}></TaskDropContainer>
+          </div>
         </div>
-        <div className="task-box-container">
-          {this.state.taskDivs}
-        </div>
-      </div>
+      </DndProvider>
     )
   }
   
