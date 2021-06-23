@@ -1,100 +1,46 @@
 import './App.css'
-import React from 'react'
+import React, {useState} from 'react'
 import { useDrag } from 'react-dnd'
 // import { ItemTypes } from './Constants'
 
 // todo move png to public
 // todo check for first time visit and give them a little tour
 
-class Task extends React.Component{
-  constructor(props){
-    super(props)
-    this.state = { 
-      title: props.title, 
-      priority: props.priority,
-      showButtons: null,
-      taskID : props.taskID
-    }
-
-    // needed to make 'this' work in callback
-    // this is the old way of doing things before arrow functions were introduced (=>)
-    this.changePriorityState = this.changePriorityState.bind(this);
-    this.changeTitle         = this.changeTitle.bind(this);
-    this.renderButtons       = this.renderButtons.bind(this);
-    this.deRenderButtons     = this.deRenderButtons.bind(this);
-  }
-
-  // todo update this, is depricated
-  componentWillReceiveProps({title, taskID, priority}){
-    this.setState({
-      title: title,
-      taskID: taskID,
-      priority: priority,
-      // may need to add ref to this
-    })
-  }
-
-  // take in Task object, change priority
-  // todo find a way to avoid repeating this
-  changePriorityState() {
-    if(this.state.priority == 'low'){
-      this.setState({priority : 'medium'})
-    }
-    if(this.state.priority == 'medium'){
-      this.setState({priority : 'high'})    
-    }
-    if(this.state.priority == 'high'){
-      this.setState({priority : 'low'})    
-    }
-  } 
-
-  changeTitle(event){
-    //todo change title of task with API call
-    //todo update state of title
-    
-    this.setState({title: event.target.value})
-  }
-
-  moveElement(){
-    // move self to another place on list
-  }
-
-  renderButtons(){
-    this.setState({showButtons: true})
-  }
-  
-  deRenderButtons(){
-    setTimeout(() => this.setState({showButtons: false}), 500)
-  }
-
-  removeSelf = () => {
-    this.props.removeTask(this.state.taskID)
-  }
+function Task(props) {
+  const [title, changeTitle]         = React.useState(props.title)
+  const [priority, changePriority]   = React.useState(props.priority)
+  const [taskID]                     = React.useState(props.taskID)
+  const [showButtons, setButtonShow] = React.useState(null)  
 
   
 
-  //todo ask Nate the best structure for deleting tasks
-  render() {
-    return ( 
-      <div className={`task-box ${this.state.priority}-border`} ref={this.props.drag} 
-           onClick={this.moveElement} 
-           onMouseOver={this.renderButtons} 
-           onMouseLeave={this.deRenderButtons}
-           ref={this.props.innerRef}>
+  return ( 
+    <div className={`task-box ${priority}-border`}
+      // onClick={this.moveElement} 
+      onMouseOver={() => setButtonShow(true)}
+      onMouseLeave={() => setTimeout(() => setButtonShow(false), 500)}>
         <input type="text" 
                className={"title-display white-font"} 
-               onChange={this.changeTitle} 
-               value={this.state.title}/>
-          {this.state.showButtons ? <div className="edit-buttons" >
-            <Trashbutton removeTask={this.removeSelf}/>
+               onChange={(event) => changeTitle(event.target.value)} 
+               value={title}/>
+          {showButtons ? <div className="edit-buttons" >
+            <Trashbutton removeTask={() => props.removeTask(taskID)}/>
             <PriorityButton size={"small-button"} 
-                            priority={this.state.priority} 
-                            click={this.changePriorityState}/>
+                            priority={priority} 
+                            click={() => changePriority(cyclePriority(priority))}
+                            />
           </div>: null}
       </div>
-    )
-  }
+    )    
+} 
+
+
+function cyclePriority(priority) {
+  if (priority == 'low')   {return 'medium'}
+  if (priority == 'medium'){return 'high'}
+  if (priority == 'high')  {return 'low'}    
 }
+
 
 class Todo extends React.Component{
   constructor(props){
@@ -102,9 +48,9 @@ class Todo extends React.Component{
     let _tempDivs = []
     for(let i=0; i < 5; i++){
       _tempDivs.push(<Task title={`task ${i + 1}`} 
-                           priority='low' 
-                           taskID={i} 
-                           removeTask={this.removeTask}/>)
+      priority='low' 
+      taskID={i} 
+      removeTask={this.removeTask}/>)
     }
     this.state = {
       //temp for testing
@@ -170,7 +116,6 @@ class Todo extends React.Component{
   }
 
   //this doesnt work with class components
-  //todo change Task to function using hooks
   // // draggableTask(){
   // //   const [{ isDragging, drag}] = useDrag(() => ({
   // //     type: Task,
