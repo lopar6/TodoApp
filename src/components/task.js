@@ -3,7 +3,7 @@ import { useDrag } from 'react-dnd';
 
 import { Trashbutton } from './trash-button';
 import { PriorityButton } from './priority-button';
-// priorty buton already included form todo component
+import { cyclePriority } from '../services/cycle-priority';
 
 export function Task(props) {
     const [title, setTitle]            = useState(props.title)
@@ -40,9 +40,3 @@ export function Task(props) {
         </div>
       )    
   } 
-
-function cyclePriority(priority) {
-    if (priority == 'low')   {return 'medium'}
-    if (priority == 'medium'){return 'high'}
-    if (priority == 'high')  {return 'low'}    
-}

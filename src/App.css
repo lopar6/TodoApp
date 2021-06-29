@@ -35,14 +35,14 @@ html, body {
 
 .trash{
   background-color: #ffffff05 !important;
-  background-image: url(trash-icon.png);
+  background-image: url(images/trash-icon.png);
   background-size: 100%;
   background-repeat: no-repeat;
 }
 
 .edit{
   background-color: #ffffff05 !important;
-  background-image: url(edit-icon.png);
+  background-image: url(images/edit-icon.png);
   background-size: 100%;
   background-repeat: no-repeat;
 }
