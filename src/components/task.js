@@ -9,13 +9,14 @@ export function Task(props) {
     const [title, setTitle]            = useState(props.title)
     const [priority, setPriority]      = useState(props.priority)
     const [showButtons, setButtonShow] = useState(null)  
-  
-  
-    const [{isDragging, taskBeingDragged}, drag] = useDrag(() => ({
+    
+    const index = props.index
+    const [{isDragging}, drag] = useDrag(() => ({
       type: 'Task',
-      collect: (monitor, connect) => ({
-        isDragging: !!monitor.isDragging(),
-        // taskBeingDragged: connect.dragSource()
+      item: {type : 'Task', index},
+      dropEffect: "move",
+      collect: (monitor) => ({
+        isDragging: !!monitor.isDragging()
       })
     }))
   
@@ -31,7 +32,7 @@ export function Task(props) {
                  onChange={(event) => setTitle(event.target.value)} 
                  value={title}/>
             {showButtons ? <div className="edit-buttons" >
-              <Trashbutton removeTask={() => props.removeTask(props.keyValue)}/>
+              <Trashbutton removeTask={() => props.removeTask(props.index)}/>
               <PriorityButton size={"small-button"} 
                               priority={priority} 
                               click={() => setPriority(cyclePriority(priority))}

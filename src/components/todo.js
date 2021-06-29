@@ -5,6 +5,15 @@ import { HTML5Backend } from 'react-dnd-html5-backend'
 import { Task } from './task.js'
 import { PriorityButton } from './priority-button';
 import { TaskDropContainer } from './task-drop-container';
+// import { Todo } from './todo';
+
+class TaskInitializer {
+  constructor(_title, _priority, _key){
+    this.title = _title
+    this.priority = _priority
+    this.key = _key
+  }
+}
 
 export class Todo extends React.Component{
     constructor(props){
@@ -12,7 +21,7 @@ export class Todo extends React.Component{
       this.state = {
         //temp for testing
         //replace with api call
-        taskDivs: [],
+        tasks: [],
         newTaskTitle: '',
         newTaskPriority: 'low',
       } 
@@ -21,26 +30,20 @@ export class Todo extends React.Component{
     // dont need to bind method when using arrow functions
     // it helps Javascript understand the context
     addNewTask = (event) => {
-      if(this.state.newTaskTitle && this.state.newTaskTitle != ''){
+      if(this.state.newTaskTitle && this.state.newTaskTitle !== ''){
         // concat returns a new array with whatever was passed in added on
         // key needs to be completely unique and unchanging
         // todo replace _key with value from api
         let _key = Math.floor(Math.random()* 100000)
-        let _previousTaskDivs = this.state.taskDivs.concat(
-          <TaskDropContainer moveTask={this.moveTask}
-                             task={<Task title={this.state.newTaskTitle} 
-                             priority={this.state.newTaskPriority} 
-                             removeTask={this.removeTask}
-                             // key helps React identify individual components
-                             // Without it React doesnt understand what component is what when array is mutated
-                             key={_key}
-                             keyValue={_key}/>}>
-          </TaskDropContainer>
+        let task = new TaskInitializer(
+          this.state.newTaskTitle,
+          this.state.newTaskPriority,
+          _key,
+          this.removeTask()
         )
-        // why wont this work
-        // let _previousTaskDivs = [<Task title={this.state.newTaskTitle} priority={this.state.newTaskPriority}/>].concat(this.state.taskDivs)
+        let _newTasks = this.state.tasks.concat(task)
         this.setState({
-          taskDivs: _previousTaskDivs,
+          task: _newTasks,
           newTaskTitle: '',
           newTaskPriority: 'low',
         })
@@ -48,34 +51,33 @@ export class Todo extends React.Component{
       }
     }
   
-    //right now it just puts a new task at the end
-    moveTask = (key) => {
-      let newTaskDivs = this.state.taskDivs.concat(<Task title={this.state.newTaskTitle} 
-                      priority={this.state.newTaskPriority} 
-                      removeTask={this.removeTask}
-                // key helps React identify individual components
-                // Without it React doesnt understand what component is what when array is mutated
-                      key={0}
-                      keyValue={0}/>)
-      this.setState({taskDivs: newTaskDivs})
+    //todo add logic to change location of Tasks in state.tasks
+    moveTask = (dragIndex, dropIndex) => {
+      let _tempTasks = [...this.state.tasks]
+      // insert dragged task into list
+      _tempTasks.splice(dropIndex, 0, _tempTasks[dragIndex])
+      // remove dragged task
+      _tempTasks.splice(dragIndex, 1)
+
+      this.setState({tasks: _tempTasks})
     }
   
     // this could be more efficient
     removeTask = (key) => {
       let taskLocationInArray
-      for(let i = 0; i < this.state.taskDivs.length; i++){
-        if(this.state.taskDivs[i].key == key){
+      for(let i = 0; i < this.state.tasks.length; i++){
+        if(this.state.tasks[i].key === key){
           taskLocationInArray = i
           //todo make sure i know this does what i think it does
           break
         }
       }
   
-      let _tempTaskDivs = this.state.taskDivs.concat()
-      _tempTaskDivs.splice(taskLocationInArray, 1)
+      let _tempTasks = this.state.tasks.concat()
+      _tempTasks.splice(taskLocationInArray, 1)
       // need to update child taskID with new location in array
       // start from where we spliced
-      this.setState({taskDivs: _tempTaskDivs})
+      this.setState({tasks: _tempTasks})
     }
     
     changeNewTaskTitle = (event) => {
@@ -83,13 +85,13 @@ export class Todo extends React.Component{
     }
     
     changeNewTaskPriority = () =>{
-      if(this.state.newTaskPriority == 'low'){
+      if(this.state.newTaskPriority === 'low'){
         this.setState({newTaskPriority : 'medium'})
       }
-      else if(this.state.newTaskPriority == 'medium'){
+      else if(this.state.newTaskPriority === 'medium'){
         this.setState({newTaskPriority : 'high'})    
       }
-      else if(this.state.newTaskPriority == 'high'){
+      else if(this.state.newTaskPriority === 'high'){
         this.setState({newTaskPriority : 'low'})    
       }
     }
@@ -112,7 +114,8 @@ export class Todo extends React.Component{
                       placeholder="Enter a new task" 
                       onChange={this.changeNewTaskTitle} 
                       value={this.state.newTaskTitle} 
-                      removeTask={this.removeTask}>
+                      // removeTask={this.removeTask}
+                      >
                 </input>
                 <div id="priority-buttons">
                     <PriorityButton priority={this.state.newTaskPriority} 
@@ -127,8 +130,25 @@ export class Todo extends React.Component{
             </div>
             <div className="task-box-container">
   
-              {this.state.taskDivs}
-              <TaskDropContainer moveTask={this.moveTask}></TaskDropContainer>
+              {this.state.tasks.map(
+                (task, index) => {
+                  return (
+                    <TaskDropContainer
+                      index={index}
+                      moveTask={this.moveTask}
+                      task={
+                        <Task 
+                        index={index}
+                        title={task.title}
+                        priority={task.priority}
+                        key={task.key}
+                        removeTask={this.removeTask}
+                        />
+                      }>
+                    </TaskDropContainer>
+                  )
+                } 
+              )}
             </div>
           </div>
         </DndProvider>
