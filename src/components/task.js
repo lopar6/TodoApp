@@ -3,7 +3,6 @@ import { useDrag, useDrop } from 'react-dnd';
 
 import { Trashbutton } from './trash-button';
 import { PriorityButton } from './priority-button';
-import { cyclePriority } from '../services/cycle-priority';
 
 export function Task({index, title, priority, removeTask, moveTask, updateTitle, setPriority}) {
     const [showButtons, setButtonShow] = useState(null)  
@@ -35,42 +34,44 @@ export function Task({index, title, priority, removeTask, moveTask, updateTitle,
           handlerId: monitor.getHandlerId()
         }
       },
-
-      drop: (item) => {
-      const dragKey = item.index
-      const dropKey = index
+      //add this when API is up
+      // drop: (item) => {
+      // const dragKey = item.index
+      // const dropKey = index
       
-    },
-    hover: (item, monitor) => {
-      // if the reference to the drop DOM object does not exist
-      // do not continue
-      const dragIndex = item.index
-      const dropIndex = index
-      // dont replace items with themselves
-      if (dragIndex === dropIndex) {return}
-      if (!ref.current) {return}
-      // find rectangle location of div
-      const boundingRect = ref.current?.getBoundingClientRect()
-      // middle of rectangle
-      const middle = (boundingRect.bottom - boundingRect.top) / 2
-      // get mouse position
-      const mouseOffset = monitor.getClientOffset().y -boundingRect.top
-      //if moving down, only activate when below half of component
-      if (dragIndex < dropIndex && mouseOffset < middle){
-        return
+      // },
+      hover: (item, monitor) => {
+        // if the reference to the drop DOM object does not exist
+        // do not continue
+        const dragIndex = item.index
+        const dropIndex = index
+        // dont replace items with themselves
+        if (dragIndex === dropIndex) {return}
+        if (!ref.current) {return}
+        // find rectangle location of div
+        const boundingRect = ref.current?.getBoundingClientRect()
+        // middle of rectangle
+        const middle = (boundingRect.bottom - boundingRect.top) / 2
+        // get mouse position
+        const mouseOffset = monitor.getClientOffset().y -boundingRect.top
+        //if moving down, only activate when below half of component
+        if (dragIndex < dropIndex && mouseOffset < middle){
+          return
+        }
+        // if moving up, only activate when above half of component
+        if (dragIndex > dropIndex && mouseOffset > middle){
+          return
+        }
+        moveTask(dragIndex, dropIndex)
+        // this is nessecary to stabilize after hovering
+        item.index = dropIndex;
+        // setTimeout(moveTask(dragIndex, dropIndex), 500)
       }
-      // if moving up, only activate when above half of component
-      if (dragIndex > dropIndex && mouseOffset > middle){
-        return
-      }
-      moveTask(dragIndex, dropIndex)
-      // this is nessecary to stabilize after hovering
-      item.index = dropIndex;
-      // setTimeout(moveTask(dragIndex, dropIndex), 500)
-    }
-  })
-//  !wtf is this
-//todo make hover move things and drop write changes to DB
+    })
+    
+
+    //todo make hover move things and drop write changes to DB
+    //  !wtf is this
     drag(drop(ref))
     return ( 
       <div ref={ref} data-handler-id={handlerId}>
@@ -90,7 +91,7 @@ export function Task({index, title, priority, removeTask, moveTask, updateTitle,
                 <Trashbutton removeTask={() => removeTask(index)}/>
                 <PriorityButton size={"small-button"} 
                                 priority={priority} 
-                                click={() => setPriority(cyclePriority(priority))}
+                                click={() => setPriority(index)}
                                 />
               </div>: null}
         </div>

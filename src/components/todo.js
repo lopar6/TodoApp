@@ -5,6 +5,8 @@ import { HTML5Backend } from 'react-dnd-html5-backend'
 
 import { Task } from './task.js'
 import { PriorityButton } from './priority-button';
+import { cyclePriority } from '../services/cycle-priority';
+
 
 class TaskInitializer {
   constructor(_title, _priority, _key){
@@ -15,6 +17,8 @@ class TaskInitializer {
   }
 }
 
+//todo button hover feels off
+//todo consider adding new task and top and animating down
 //todo consider adding useCallback to improve performance
 export class Todo extends React.Component{
     constructor(props){
@@ -36,16 +40,15 @@ export class Todo extends React.Component{
         // key needs to be completely unique and unchanging
         // todo replace _key with value from api
         let _key = Math.floor(Math.random()* 100000)
-        let task = new TaskInitializer(
+        let task = [new TaskInitializer(
           this.state.newTaskTitle,
           this.state.newTaskPriority,
           _key
-        )
-        let _newTasks = this.state.tasks.concat(task)
+        )]
+        let _newTasks = task.concat(this.state.tasks)
         this.setState({
           tasks: _newTasks,
-          newTaskTitle: '',
-          newTaskPriority: 'low',
+          newTaskTitle: ''
         })
         //todo change values with API call
       }
@@ -63,21 +66,9 @@ export class Todo extends React.Component{
       this.setState({tasks: _tempTasks})
     }
   
-    // this could be more efficient
-    removeTask = (key) => {
-      let taskLocationInArray
-      for(let i = 0; i < this.state.tasks.length; i++){
-        if(this.state.tasks[i].key === key){
-          taskLocationInArray = i
-          //todo make sure i know this does what i think it does
-          break
-        }
-      }
-  
-      let _tempTasks = this.state.tasks.concat()
-      _tempTasks.splice(taskLocationInArray, 1)
-      // need to update child taskID with new location in array
-      // start from where we spliced
+    removeTask = (index) => {
+      let _tempTasks = [...this.state.tasks]
+      _tempTasks.splice(index, 1)
       this.setState({tasks: _tempTasks})
     }
     
@@ -102,6 +93,18 @@ export class Todo extends React.Component{
       this.addNewTask(event)
     }
 
+    setPriority = (index) => {
+      let _tempTasks = [...this.state.tasks]
+      _tempTasks[index].priority = cyclePriority(_tempTasks[index].priority)
+      this.setState({tasks: _tempTasks})
+    }
+  
+    updateTitle = (event, index) => {
+      let _tempTasks = [...this.state.tasks]
+      _tempTasks[index].title = event.target.value
+      this.setState({tasks: _tempTasks})
+    }
+    
     renderTask(task, index){
       task.index = index
       return(
@@ -120,14 +123,6 @@ export class Todo extends React.Component{
       )
     }
 
-    //todo implement this
-    setPriority(index){
-    }
-  
-    //todo implement this
-    updateTitle(event, index){
-      event.target.value()
-    }
   
     render(){
       return(
