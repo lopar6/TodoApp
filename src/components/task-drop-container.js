@@ -31,8 +31,8 @@ export const TaskDropContainer = (props, child) => {
           // dont replace items with themselves
           if (dragKey === dropKey) {return}
           // find rectangle location of div
-          const boundingRect = dropRef.current.getBoundingClientRect()
-          const middleY = (boundingRect.bottom - boundingRect.top) / 2
+          // const boundingRect = dropRef.current.getBoundingClientRect()
+          // const middleY = (boundingRect.bottom - boundingRect.top) / 2
           // get mouse position
           const mouseOffest = monitor.getClientOffset()
 

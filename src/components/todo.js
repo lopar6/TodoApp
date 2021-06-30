@@ -43,7 +43,7 @@ export class Todo extends React.Component{
         )
         let _newTasks = this.state.tasks.concat(task)
         this.setState({
-          task: _newTasks,
+          tasks: _newTasks,
           newTaskTitle: '',
           newTaskPriority: 'low',
         })
@@ -136,12 +136,12 @@ export class Todo extends React.Component{
                     <TaskDropContainer
                       index={index}
                       moveTask={this.moveTask}
+                      key={task.key}
                       task={
                         <Task 
                         index={index}
                         title={task.title}
                         priority={task.priority}
-                        key={task.key}
                         removeTask={this.removeTask}
                         />
                       }>
