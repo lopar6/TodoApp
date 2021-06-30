@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useContext } from 'react'
 import { useDrag, useDrop } from 'react-dnd';
 
 import { Trashbutton } from './trash-button';
@@ -11,14 +11,17 @@ export function Task(props) {
     const [showButtons, setButtonShow] = useState(null)  
     const dropRef                      = useRef(null)
     const [index, setIndex]            = useState(props.index)
-
-    // useEffect(() =>{
-    //   console.log(`${title} = ${index} = ${props.key}`)
-    // }, [props.key, title, index])
+    
+    useEffect(() => {
+      setIndex(index)
+      setPriority(priority)
+      setTitle(title)
+      console.log(index, title, props.index)
+    }, [index, title, priority, props])
 
     const [{isDragging}, drag] = useDrag(() => ({
       type: 'Task',
-      item: {type : 'Task', index},
+      item: {index},
       dropEffect: "move",
       collect: (monitor) => ({
         isDragging: !!monitor.isDragging()
@@ -32,7 +35,7 @@ export function Task(props) {
         //todo add hover moving mechanics
         hover: (item) => {
           // const dragKey = item.index
-          // const dropKey = props.index
+          // const dropKey = index
         },
         drop: (item) => {
           // Determine rectangle on screen
@@ -40,10 +43,10 @@ export function Task(props) {
           // do not continue
           const dragIndex = item.index
           const dropIndex = index
+          console.log("drag", dragIndex, "drop", dropIndex)
           // dont replace items with themselves
           if (dragIndex === dropIndex) {return}
           props.moveTask(dragIndex, dropIndex)
-          setIndex(dropIndex)
           
 
         //todo finish this logic
@@ -64,6 +67,7 @@ export function Task(props) {
 
     return ( 
       <div ref={drop}>
+        {/* {console.log(title, props.index, "has rendered")} */}
         <div className={`task-box ${priority}-border`}
           // onClick={this.moveElement} 
           onMouseOver={() => setButtonShow(true)}

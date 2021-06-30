@@ -52,17 +52,11 @@ export class Todo extends React.Component{
     //todo add logic to change location of Tasks in state.tasks
     moveTask = (dragIndex, dropIndex) => {
       let _tempTasks = [...this.state.tasks]
-      // insert dragged task into list
-      _tempTasks.splice(dropIndex, 0, _tempTasks[dragIndex])
-      // if moving from top to bottom
-      if (dragIndex < dropIndex){
-        _tempTasks.splice(dragIndex, 1)
-      } 
-      // if moving from bottom to top
-      else {
-        _tempTasks.splice(dragIndex+1, 1)
-      }
-      // remove dragged task
+      const draggedTask = _tempTasks[dragIndex]
+      // delete dragged task
+      _tempTasks.splice(dragIndex, 1)
+      // add dragged task back in 
+      _tempTasks.splice(dropIndex, 0, draggedTask)
 
       this.setState({tasks: _tempTasks})
     }
@@ -119,7 +113,6 @@ export class Todo extends React.Component{
                       placeholder="Enter a new task" 
                       onChange={this.changeNewTaskTitle} 
                       value={this.state.newTaskTitle} 
-                      // removeTask={this.removeTask}
                       >
                 </input>
                 <div id="priority-buttons">
@@ -138,9 +131,11 @@ export class Todo extends React.Component{
               {this.state.tasks.map(
                 (task, index) => {
                   return (
+                    // console.log(task.key, index),
                     <Task 
                       moveTask={this.moveTask}
                       //key value not accessable to components
+                      //key does not coorelate with actual database key value
                       key={task.key}
                       index={index}
                       title={task.title}
