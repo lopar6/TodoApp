@@ -1,37 +1,40 @@
-import { useState, useRef, useEffect, useContext } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useDrag, useDrop } from 'react-dnd';
 
 import { Trashbutton } from './trash-button';
 import { PriorityButton } from './priority-button';
 import { cyclePriority } from '../services/cycle-priority';
 
-export function Task(props) {
-    const [title, setTitle]            = useState(props.title)
-    const [priority, setPriority]      = useState(props.priority)
+export function Task({key, index, title, priority, removeTask, moveTask, updateTitle, setPriority}) {
     const [showButtons, setButtonShow] = useState(null)  
-    const dropRef                      = useRef(null)
-    const [index, setIndex]            = useState(props.index)
+    const ref = useRef(null)
     
     useEffect(() => {
-      setIndex(index)
-      setPriority(priority)
-      setTitle(title)
-      console.log(index, title, props.index)
-    }, [index, title, priority, props])
+      console.log(index, title)
+    }, [index, title])
 
-    const [{isDragging}, drag] = useDrag(() => ({
+    const [{isDragging}, drag] = useDrag(({
       type: 'Task',
-      item: {index},
-      dropEffect: "move",
+      item: () => {
+        return {index}
+      },
       collect: (monitor) => ({
-        isDragging: !!monitor.isDragging()
-      })
+        isDragging: !!monitor.isDragging(),
+        // todo change this to only passing index
+        taskItem: monitor.getItem()
+      }),
+      dropEffect: "move",
     }))
-  
+  // !may need to pass in key value for dnd
 
     const [, drop, monitor] = useDrop(
       () => ({
         accept: 'Task',
+        collect: (monitor) => ({
+          // isDragging: !!monitor.isDragging(),
+          taskItem: monitor.getItem()
+        }),
+
         //todo add hover moving mechanics
         hover: (item) => {
           // const dragKey = item.index
@@ -41,45 +44,50 @@ export function Task(props) {
           // Determine rectangle on screen
           // if the reference to the drop DOM object does not exist
           // do not continue
+          // let dragTask = item
           const dragIndex = item.index
+          console.log(item)
           const dropIndex = index
           console.log("drag", dragIndex, "drop", dropIndex)
           // dont replace items with themselves
           if (dragIndex === dropIndex) {return}
-          props.moveTask(dragIndex, dropIndex)
-          
+          moveTask(dragIndex, dropIndex)
+          //! how is this possible
+          item.index = dropIndex
 
         //todo finish this logic
 
-        if (!dropRef.current) {return}
+        if (!ref.current) {return}
         // find rectangle location of div
         // const boundingRect = dropRef.current.getBoundingClientRect()
         // const middleY = (boundingRect.bottom - boundingRect.top) / 2
         // get mouse position
-        const mouseOffest = monitor.getClientOffset()
+        // const mouseOffest = monitor.getClientOffset()
 
 
         //todo add logic to make sure tasks are moved to the correct place (above or below halfway)
         }
       })
     )
-
-
+//  !wtf is this
+//todo make hover move things and drop write changes to DB
+    drag(drop(ref))
     return ( 
-      <div ref={drop}>
+      <div ref={ref}>
         {/* {console.log(title, props.index, "has rendered")} */}
         <div className={`task-box ${priority}-border`}
           // onClick={this.moveElement} 
           onMouseOver={() => setButtonShow(true)}
           onMouseLeave={() => setTimeout(() => setButtonShow(false), 500)}
           style={{opacity: isDragging ? 0.5 : 1, cursor: 'move'}}
-          ref={drag}>
+          // ref={drag}
+          >
             <input type="text" 
                   className={"title-display white-font"} 
-                  onChange={(event) => setTitle(event.target.value)} 
+                  onChange={(event) => updateTitle(event, index)} 
                   value={title}/>
               {showButtons ? <div className="edit-buttons" >
-                <Trashbutton removeTask={() => props.removeTask(props.index)}/>
+                <Trashbutton removeTask={() => removeTask(index)}/>
                 <PriorityButton size={"small-button"} 
                                 priority={priority} 
                                 click={() => setPriority(cyclePriority(priority))}
