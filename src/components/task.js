@@ -26,7 +26,6 @@ export function Task({index, title, priority, removeTask, moveTask, updateTitle,
       },
       dropEffect: "move",
     }))
-  // !may need to pass in key value for dnd
 
     const [{handlerId}, drop] = useDrop ({
       accept: 'Task',
@@ -37,39 +36,39 @@ export function Task({index, title, priority, removeTask, moveTask, updateTitle,
         }
       },
 
-      //todo add hover moving mechanics
-      hover: (item) => {
-        // const dragKey = item.index
-        // const dropKey = index
-      },
       drop: (item) => {
-        // Determine rectangle on screen
-        // if the reference to the drop DOM object does not exist
-        // do not continue
-        // let dragTask = item
-        const dragIndex = item.index
-        console.log(item)
-        const dropIndex = index
-        console.log("drag", dragIndex, "drop", dropIndex)
-        // dont replace items with themselves
-        if (dragIndex === dropIndex) {return}
-        moveTask(dragIndex, dropIndex)
-        //! how is this possible
-        // item.index = dropIndex
-
-      //todo finish this logic
-
+      const dragKey = item.index
+      const dropKey = index
+      
+    },
+    hover: (item, monitor) => {
+      // if the reference to the drop DOM object does not exist
+      // do not continue
+      const dragIndex = item.index
+      const dropIndex = index
+      // dont replace items with themselves
+      if (dragIndex === dropIndex) {return}
       if (!ref.current) {return}
       // find rectangle location of div
-      // const boundingRect = dropRef.current.getBoundingClientRect()
-      // const middleY = (boundingRect.bottom - boundingRect.top) / 2
+      const boundingRect = ref.current?.getBoundingClientRect()
+      // middle of rectangle
+      const middle = (boundingRect.bottom - boundingRect.top) / 2
       // get mouse position
-      // const mouseOffest = monitor.getClientOffset()
-
-
-      //todo add logic to make sure tasks are moved to the correct place (above or below halfway)
+      const mouseOffset = monitor.getClientOffset().y -boundingRect.top
+      //if moving down, only activate when below half of component
+      if (dragIndex < dropIndex && mouseOffset < middle){
+        return
       }
-    })
+      // if moving up, only activate when above half of component
+      if (dragIndex > dropIndex && mouseOffset > middle){
+        return
+      }
+      moveTask(dragIndex, dropIndex)
+      // this is nessecary to stabilize after hovering
+      item.index = dropIndex;
+      // setTimeout(moveTask(dragIndex, dropIndex), 500)
+    }
+  })
 //  !wtf is this
 //todo make hover move things and drop write changes to DB
     drag(drop(ref))
