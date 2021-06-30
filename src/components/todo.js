@@ -4,7 +4,6 @@ import { HTML5Backend } from 'react-dnd-html5-backend'
 
 import { Task } from './task.js'
 import { PriorityButton } from './priority-button';
-import { TaskDropContainer } from './task-drop-container';
 // import { Todo } from './todo';
 
 class TaskInitializer {
@@ -38,8 +37,7 @@ export class Todo extends React.Component{
         let task = new TaskInitializer(
           this.state.newTaskTitle,
           this.state.newTaskPriority,
-          _key,
-          this.removeTask()
+          _key
         )
         let _newTasks = this.state.tasks.concat(task)
         this.setState({
@@ -56,8 +54,15 @@ export class Todo extends React.Component{
       let _tempTasks = [...this.state.tasks]
       // insert dragged task into list
       _tempTasks.splice(dropIndex, 0, _tempTasks[dragIndex])
+      // if moving from top to bottom
+      if (dragIndex < dropIndex){
+        _tempTasks.splice(dragIndex, 1)
+      } 
+      // if moving from bottom to top
+      else {
+        _tempTasks.splice(dragIndex+1, 1)
+      }
       // remove dragged task
-      _tempTasks.splice(dragIndex, 1)
 
       this.setState({tasks: _tempTasks})
     }
@@ -133,19 +138,15 @@ export class Todo extends React.Component{
               {this.state.tasks.map(
                 (task, index) => {
                   return (
-                    <TaskDropContainer
-                      index={index}
+                    <Task 
                       moveTask={this.moveTask}
+                      //key value not accessable to components
                       key={task.key}
-                      task={
-                        <Task 
-                        index={index}
-                        title={task.title}
-                        priority={task.priority}
-                        removeTask={this.removeTask}
-                        />
-                      }>
-                    </TaskDropContainer>
+                      index={index}
+                      title={task.title}
+                      priority={task.priority}
+                      removeTask={this.removeTask}
+                    />
                   )
                 } 
               )}
