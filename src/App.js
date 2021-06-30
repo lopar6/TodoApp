@@ -6,7 +6,7 @@ import { Todo } from './components/todo';
   
   function App() {
     return (
-      <div id="todo-container"><Todo/></div>
+      <Todo/>
     );
   }
 export default App;

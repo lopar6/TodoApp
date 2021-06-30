@@ -1,12 +1,12 @@
 import React from 'react';
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
+import { motion } from "framer-motion"
 // consider using this import update from 'immutability-helper';
 
 import { Task } from './task.js'
 import { PriorityButton } from './priority-button';
 import { cyclePriority } from '../services/cycle-priority';
-
 
 class TaskInitializer {
   constructor(_title, _priority, _key){
@@ -18,7 +18,6 @@ class TaskInitializer {
 }
 
 //todo button hover feels off
-//todo consider adding new task and top and animating down
 //todo consider adding useCallback to improve performance
 export class Todo extends React.Component{
     constructor(props){
@@ -123,38 +122,50 @@ export class Todo extends React.Component{
       )
     }
 
-  
     render(){
       return(
         <DndProvider backend={HTML5Backend} >
-          <div>
+          <motion.div
+            id={"todo-container"}
+            layout={true}
+            animate={{ pathLength: 1 }}
+            transition={{ type:'spring', bounce: .15, duration: .6, ease:"easeOut"}}
+            >
             <div id="new-todo-box">
-              <form id="new-task-form"
-                    onSubmit={this.handleSubmission}>
-                <input type="text" 
-                      id="new-task-title" 
-                      placeholder="Enter a new task" 
-                      onChange={this.changeNewTaskTitle} 
-                      value={this.state.newTaskTitle} 
-                      >
+              <form 
+                id="new-task-form"
+                onSubmit={this.handleSubmission}>
+                <input 
+                  type="text" 
+                  id="new-task-title" 
+                  placeholder="Enter a new task" 
+                  onChange={this.changeNewTaskTitle} 
+                  value={this.state.newTaskTitle}
+                  >
                 </input>
                 <div id="priority-buttons">
-                    <PriorityButton priority={this.state.newTaskPriority} 
-                                    click={this.changeNewTaskPriority}/>
-                    <input type="button" 
-                          className={`input-button submit`} 
-                          value="save" 
-                          onClick={this.addNewTask}>
+                    <PriorityButton 
+                      priority={this.state.newTaskPriority} 
+                      click={this.changeNewTaskPriority}/>
+                    <input 
+                      type="button" 
+                      className={`input-button submit`} 
+                      value="save" 
+                      onClick={this.addNewTask}
+                      >
                     </input>
                 </div>
               </form>
             </div>
-            <div className="task-box-container">
-              {this.state.tasks.map((task, index)  => this.renderTask(task, index))}
-            </div>
-          </div>
+            <motion.div 
+              layout={true} 
+              transition={{ type: 'spring', duration: .6 }}
+              className="task-box-container">
+                {this.state.tasks.map((task, index)  => this.renderTask(task, index))}
+            </motion.div>
+          </motion.div>
         </DndProvider>
-      )
+        )
+      }
+      
     }
-    
-  }
