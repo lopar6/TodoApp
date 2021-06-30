@@ -1,19 +1,21 @@
 import React from 'react';
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
+// consider using this import update from 'immutability-helper';
 
 import { Task } from './task.js'
 import { PriorityButton } from './priority-button';
-// import { Todo } from './todo';
 
 class TaskInitializer {
   constructor(_title, _priority, _key){
     this.title = _title
     this.priority = _priority
     this.key = _key
+    this.index = 0
   }
 }
 
+//todo consider adding useCallback to improve performance
 export class Todo extends React.Component{
     constructor(props){
       super(props)
@@ -99,7 +101,33 @@ export class Todo extends React.Component{
       event.preventDefault()
       this.addNewTask(event)
     }
+
+    renderTask(task, index){
+      task.index = index
+      return(
+        <Task 
+        //key value not accessable to components
+        //key does not coorelate with actual database key value
+        key={task.key}
+        index={index}
+        title={task.title}
+        priority={task.priority}
+        removeTask={this.removeTask}
+        moveTask={this.moveTask}
+        updateTitle={this.updateTitle}
+        setPriority={this.setPriority}
+        />
+      )
+    }
+
+    //todo implement this
+    setPriority(index){
+    }
   
+    //todo implement this
+    updateTitle(event, index){
+      event.target.value()
+    }
   
     render(){
       return(
@@ -127,24 +155,7 @@ export class Todo extends React.Component{
               </form>
             </div>
             <div className="task-box-container">
-  
-              {this.state.tasks.map(
-                (task, index) => {
-                  return (
-                    // console.log(task.key, index),
-                    <Task 
-                      moveTask={this.moveTask}
-                      //key value not accessable to components
-                      //key does not coorelate with actual database key value
-                      key={task.key}
-                      index={index}
-                      title={task.title}
-                      priority={task.priority}
-                      removeTask={this.removeTask}
-                    />
-                  )
-                } 
-              )}
+              {this.state.tasks.map((task, index)  => this.renderTask(task, index))}
             </div>
           </div>
         </DndProvider>
