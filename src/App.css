@@ -1,0 +1,154 @@
+html, body {
+  padding: 0;
+  margin: 0;
+  font-family: 'Roboto', sans-serif !important;
+  width: 100%;
+  height: 100%;
+  font-size: 18px;
+  color: #ffffff;
+  background-image: linear-gradient(0deg, #341946, #06383a, #341946);
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+
+.white-font{
+  color: #ffffff !important;
+}
+
+.low{
+  background-color: #274862;
+}
+
+.medium{
+  background-color: #6d5a2d;
+}
+
+.high{
+  background-color: #702b2b;
+}
+
+.trash{
+  background-color: #ffffff05 !important;
+  background-image: url(images/trash-icon.png);
+  background-size: 100%;
+  background-repeat: no-repeat;
+}
+
+.edit{
+  background-color: #ffffff05 !important;
+  background-image: url(images/edit-icon.png);
+  background-size: 100%;
+  background-repeat: no-repeat;
+}
+
+.low-border {
+  border: 10px;
+  border-radius: 20px;
+  border-style: solid;
+  border-color: #274862;
+}
+
+.medium-border {
+  border: 10px;
+  border-radius: 20px;
+  border-style: solid;
+  border-color: #6d5a2d;
+
+}
+
+.high-border {
+  border: 10px;
+  border-radius: 20px;
+  border-style: solid;
+  border-color: #702b2b;
+}
+
+.small-button{
+  height: 20px !important;
+  width: 20px !important;
+}
+
+.task-box {
+  display: flex;
+  background-color: #08050c;
+  align-items: center;
+  width: 400px;
+  height: 30px;
+  padding: 10px;
+  margin: 8px;
+}
+
+.submit{
+  width: 100px !important;
+}
+
+/* todo make buttons fade in/out */
+.input-button{
+  border-radius: 40px;
+  height: 40px;
+  width: 40px;
+}
+
+.edit-buttons{
+  display: inherit;
+  flex-direction: column;
+  margin-left: 5px;
+}
+
+.title-display{
+  font-size: inherit;
+  width: 380px;
+  border: none;
+  background-color: inherit;
+}
+
+#todo-container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-content: center;
+  width: 500px;
+  margin: 20px;
+  background-color: grey;
+  border-radius: 30px;
+}
+
+#new-todo-box{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100px;
+}
+
+#new-task-form{
+  display: inherit;
+  flex-direction: row;
+}
+
+#new-task-title{
+  border-radius: 10px;
+  width: 325px;
+  height: 40px;
+  font-size: 20px;
+  background-color:#091925;
+  color: #ffffff;
+}
+
+#priority-buttons{
+  display: inherit;
+}
+
+input::placeholder{
+  color: #ffffff;
+}
+
+
+
