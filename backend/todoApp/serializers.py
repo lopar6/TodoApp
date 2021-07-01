@@ -5,7 +5,7 @@ from todoApp.models import Task, PriorityChoices
 class TaskSerializer(serializers.ModelSerializer):
     class Meta:
         model = Task
-        fields = ['indexKey', 'title', 'priority']
+        fields = ['index', 'title', 'priority', 'pk']
 
 # this another, more verbose and versital method
 # class TaskSerializer(serializers.Serializer):

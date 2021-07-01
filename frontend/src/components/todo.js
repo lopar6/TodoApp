@@ -9,13 +9,16 @@ import { PriorityButton } from './priority-button';
 import { cyclePriority } from '../services/cycle-priority';
 
 class TaskInitializer {
-  constructor(_title, _priority, _key){
+  constructor(_title, _priority, _key, _index = 0){
     this.title = _title
     this.priority = _priority
     this.key = _key
-    this.index = 0
+    this.index = _index
   }
 }
+
+const APIurl = "http://localhost:8000/"
+
 
 //todo button hover feels off
 //todo consider adding useCallback to improve performance
@@ -31,6 +34,32 @@ export class Todo extends React.Component{
       } 
     }
   
+    fetchTasks = () => {
+      return (
+        fetch(APIurl.concat("tasks"))
+        .then(res => { return res.json()})
+      )
+    }
+
+    intToPriority(value){
+      if (value === 1){return 'low'}
+      if (value === 2){return 'medium'}
+      if (value === 3){return 'high'}
+    }
+
+    syncTasks = () => {
+      this.fetchTasks()
+        .then((data) => {
+          let _tempTasks = []
+          for(let i = 0; i < data.length; i++){
+            let task = new TaskInitializer(data[i].title, this.intToPriority(data[i].priority), data[i].pk, data[i].index)
+            _tempTasks.splice(-1, 0, task)
+          }
+          this.setState({tasks: _tempTasks})
+        }
+      )
+    }
+
     // dont need to bind method when using arrow functions
     // it helps Javascript understand the context
     addNewTask = (event) => {
@@ -122,7 +151,14 @@ export class Todo extends React.Component{
       )
     }
 
+    shouldRequest = true
     render(){
+// todo remove this
+      if (this.shouldRequest){
+        this.shouldRequest =false
+        this.syncTasks()
+      }
+
       return(
         <DndProvider backend={HTML5Backend} >
           <motion.div
