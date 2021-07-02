@@ -2,20 +2,22 @@ import React from 'react';
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { motion } from "framer-motion"
+import axios from 'axios';
 // consider using this import update from 'immutability-helper';
 
 import { Task } from './task.js'
 import { PriorityButton } from './priority-button';
 import { cyclePriority } from '../services/cycle-priority';
+import { intToPriority } from '../services/intToPriority';
 
-class TaskInitializer {
-  constructor(_title, _priority, _key, _index = 0){
-    this.title = _title
-    this.priority = _priority
-    this.key = _key
-    this.index = _index
-  }
-}
+
+// example of what a task looks like
+// task {
+//   index: 0,
+//   pk: 0,
+//   priority: 1,
+//   title: ""
+// }
 
 const APIurl = "http://localhost:8000/"
 
@@ -30,34 +32,47 @@ export class Todo extends React.Component{
         //replace with api call
         tasks: [],
         newTaskTitle: '',
-        newTaskPriority: 'low',
+        newTaskPriority: 1,
       } 
     }
   
-    fetchTasks = () => {
-      return (
-        fetch(APIurl.concat("tasks"))
-        .then(res => { return res.json()})
-      )
-    }
 
-    intToPriority(value){
-      if (value === 1){return 'low'}
-      if (value === 2){return 'medium'}
-      if (value === 3){return 'high'}
-    }
-
-    syncTasks = () => {
-      this.fetchTasks()
-        .then((data) => {
-          let _tempTasks = []
-          for(let i = 0; i < data.length; i++){
-            let task = new TaskInitializer(data[i].title, this.intToPriority(data[i].priority), data[i].pk, data[i].index)
-            _tempTasks.splice(-1, 0, task)
-          }
-          this.setState({tasks: _tempTasks})
+    getTasks = () => {
+      axios.get(APIurl.concat("tasks/"))
+      .then((res) => {
+        let data = res.data
+        let _tempTasks = []
+        for(let i = 0; i < data.length; i++){
+          // let task = {
+          //   index: data[i].index,
+          //   pk: data[i].pk, 
+          //   title: data[i].title,
+          //   priority: this.intToPriority(data[i].priority),
+          // }
+          _tempTasks.splice(-1, 0, data[i])
         }
-      )
+        this.setState({tasks: _tempTasks})
+      })
+    }
+
+    // todo add error handling
+    // sends POST request to update every task on api to current state
+    // updateAPI = () => {
+    //   axios.post(APIurl.concat("tasks/"), this.state.tasks)
+    //     .then(function (response) {
+    //       console.log(response)
+    //     })
+    //     .catch(function (error) {
+    //       console.log(error)
+    //   })
+    // }
+
+    //todo implement
+    addNewTasktoAPI = (task) => {
+      axios.post(APIurl.concat(`task/${task.pk}`), task)
+        .then((response) =>{
+          console.log(response)
+        })
     }
 
     // dont need to bind method when using arrow functions
@@ -68,16 +83,18 @@ export class Todo extends React.Component{
         // key needs to be completely unique and unchanging
         // todo replace _key with value from api
         let _key = Math.floor(Math.random()* 100000)
-        let task = [new TaskInitializer(
-          this.state.newTaskTitle,
-          this.state.newTaskPriority,
-          _key
-        )]
+        let task = [{
+          index: 0,
+          pk: _key,
+          title: this.state.newTaskTitle,
+          priority: this.state.newTaskPriority,
+        }]
         let _newTasks = task.concat(this.state.tasks)
         this.setState({
           tasks: _newTasks,
           newTaskTitle: ''
         })
+        this.addNewTasktoAPI(task[0])
         //todo change values with API call
       }
     }
@@ -105,15 +122,7 @@ export class Todo extends React.Component{
     }
     
     changeNewTaskPriority = () =>{
-      if(this.state.newTaskPriority === 'low'){
-        this.setState({newTaskPriority : 'medium'})
-      }
-      else if(this.state.newTaskPriority === 'medium'){
-        this.setState({newTaskPriority : 'high'})    
-      }
-      else if(this.state.newTaskPriority === 'high'){
-        this.setState({newTaskPriority : 'low'})    
-      }
+      this.setState({newTaskPriority: cyclePriority(this.state.newTaskPriority)})
     }
   
     handleSubmission = (event) => {
@@ -137,28 +146,28 @@ export class Todo extends React.Component{
       task.index = index
       return(
         <Task 
-        //key value not accessable to components
-        //key does not coorelate with actual database key value
-        key={task.key}
-        index={index}
-        title={task.title}
-        priority={task.priority}
-        removeTask={this.removeTask}
-        moveTask={this.moveTask}
-        updateTitle={this.updateTitle}
-        setPriority={this.setPriority}
+          //key value not accessable to components
+          //key does not coorelate with actual database key value
+          key={task.pk}
+          index={index}
+          title={task.title}
+          priority={task.priority}
+          removeTask={this.removeTask}
+          moveTask={this.moveTask}
+          updateTitle={this.updateTitle}
+          setPriority={this.setPriority}
+          updateAPI={this.updateAPI}
         />
       )
     }
 
+    // only get tasks from API when first loading the page
     shouldRequest = true
     render(){
-// todo remove this
       if (this.shouldRequest){
-        this.shouldRequest =false
-        this.syncTasks()
+        this.shouldRequest = false
+        this.getTasks()
       }
-
       return(
         <DndProvider backend={HTML5Backend} >
           <motion.div
@@ -181,7 +190,7 @@ export class Todo extends React.Component{
                 </input>
                 <div id="priority-buttons">
                     <PriorityButton 
-                      priority={this.state.newTaskPriority} 
+                      priority={intToPriority(this.state.newTaskPriority)} 
                       click={this.changeNewTaskPriority}/>
                     <input 
                       type="button" 

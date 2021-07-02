@@ -4,13 +4,15 @@ import { motion } from "framer-motion"
 
 import { Trashbutton } from './trash-button';
 import { PriorityButton } from './priority-button';
+import { intToPriority } from '../services/intToPriority';
 
-export function Task({index, title, priority, removeTask, moveTask, updateTitle, setPriority}) {
+export function Task({index, title, priority, removeTask, moveTask, updateTitle, setPriority, updateAPI}) {
   const [showButtons, setButtonShow] = useState(null)  
   const ref = useRef(null)
   
+  // make sure react recognizes updates to these values when rendering
   useEffect(() => {
-  }, [index, title, priority])
+  }, [index, title, priority, index])
 
   const [{isDragging}, drag] = useDrag(({
     type: 'Task',
@@ -35,12 +37,14 @@ export function Task({index, title, priority, removeTask, moveTask, updateTitle,
         handlerId: monitor.getHandlerId()
       }
     },
-    //add this when API is up
-    // drop: (item) => {
-    // const dragKey = item.index
-    // const dropKey = index
-    
-    // },
+
+    // when item is dropped, make API call to update index position in DB
+    drop: (item) => {
+      const dragKey = item.index
+      const dropKey = index
+      updateAPI(item.index, item)
+    },
+
     hover: (item, monitor) => {
       // if the reference to the drop DOM object does not exist
       // do not continue
@@ -69,17 +73,16 @@ export function Task({index, title, priority, removeTask, moveTask, updateTitle,
       // setTimeout(moveTask(dragIndex, dropIndex), 500)
     }
   })
-  
 
   //todo make hover move things and drop write changes to DB
   //  !wtf is this
   drag(drop(ref))
   return ( 
     <div ref={ref} data-handler-id={handlerId} >
-      <div className={`task-box ${priority}-border`}
+      <div className={`task-box ${intToPriority(priority)}-border`}
         onMouseOver={() => setButtonShow(true)}
         onMouseLeave={() => setTimeout(() => setButtonShow(false), 500)}
-        style={{opacity: isDragging ? 0.1 : 1, cursor: 'move'}}
+        // style={{opacity: isDragging ? 0.1 : 1, cursor: 'move'}}
         >
           <input type="text" 
             className={"title-display white-font"} 
@@ -90,7 +93,7 @@ export function Task({index, title, priority, removeTask, moveTask, updateTitle,
               <Trashbutton removeTask={() => removeTask(index)}/>
               <PriorityButton 
                 size={"small-button"} 
-                priority={priority} 
+                priority={intToPriority(priority)} 
                 click={() => setPriority(index)}
                 />
             </div>: null}
