@@ -33,7 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # Be sure to add rest to installed apps!!
     'rest_framework',
-
+    'corsheaders',
     # this is my app
     'todoApp',
 ]
@@ -47,6 +47,10 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    # added these per django-cors
+    'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
 ]
 
 ROOT_URLCONF = 'todo.urls'
@@ -123,3 +127,12 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# cofiguration for django-cors
+CORS_ALLOWED_ORIGINS = [
+    "http://loganawesome.com",
+    "https://loganawesome.com",
+    "http://localhost:8000",
+    "http://localhost:3000",
+]
