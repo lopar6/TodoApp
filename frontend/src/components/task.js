@@ -6,7 +6,7 @@ import { Trashbutton } from './trash-button';
 import { PriorityButton } from './priority-button';
 import { intToPriority } from '../services/intToPriority';
 
-export function Task({index, title, priority, removeTask, moveTask, updateTitle, setPriority, updateAPI}) {
+export function Task({index, pk, title, priority, removeTask, moveTask, updateTitle, setPriority, updateAPI}) {
   const [showButtons, setButtonShow] = useState(null)  
   const ref = useRef(null)
   
@@ -40,9 +40,9 @@ export function Task({index, title, priority, removeTask, moveTask, updateTitle,
 
     // when item is dropped, make API call to update index position in DB
     drop: (item) => {
-      const dragKey = item.index
-      const dropKey = index
-      updateAPI(item.index, item)
+      // do not replace items with self
+      if (index.item === index ){return}
+      updateAPI()
     },
 
     hover: (item, monitor) => {
@@ -90,7 +90,7 @@ export function Task({index, title, priority, removeTask, moveTask, updateTitle,
             value={title}
             />
             {showButtons ? <div className="edit-buttons" >
-              <Trashbutton removeTask={() => removeTask(index)}/>
+              <Trashbutton removeTask={() => removeTask(index, pk)}/>
               <PriorityButton 
                 size={"small-button"} 
                 priority={intToPriority(priority)} 

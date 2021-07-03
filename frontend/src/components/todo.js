@@ -40,17 +40,16 @@ export class Todo extends React.Component{
     getTasks = () => {
       axios.get(APIurl.concat("tasks/"))
       .then((res) => {
+        console.log(res)
         let data = res.data
         let _tempTasks = []
         for(let i = 0; i < data.length; i++){
-          // let task = {
-          //   index: data[i].index,
-          //   pk: data[i].pk, 
-          //   title: data[i].title,
-          //   priority: this.intToPriority(data[i].priority),
-          // }
           _tempTasks.splice(-1, 0, data[i])
         }
+        // sort the tasks by their index value
+        //!fix this
+        _tempTasks.sort((task1, task2) => {return task1.index > task2.index? 1 : 0})
+        console.log(_tempTasks)
         this.setState({tasks: _tempTasks})
       })
     }
@@ -69,7 +68,7 @@ export class Todo extends React.Component{
 
 
     // todo make sure this works
-    updateTaskIndexsOnAPI = (skipFirst = false) => {
+    updateTasksOnAPI = (skipFirst = false) => {
     // update index values for all tasks
     for(let i = 0; i < this.state.tasks.length; i++){
       // optional skipping first element if new element just created
@@ -81,13 +80,16 @@ export class Todo extends React.Component{
       }
     }
     
-
     postTaskstoAPI = (tasks) => {
       // add new task
       axios.post(APIurl.concat(`tasks/`), tasks[0])
-      .then((response) =>{
+      .then((response) => {
         console.log(response)
+        let _tempTasks = [...this.state.tasks]
+        _tempTasks[0].pk = response.data.pk
+        this.setState({tasks: _tempTasks})
       })
+
       // update index values for all other tasks
       for(let i = 1; i < tasks.length; i++){
         axios.post(APIurl.concat(`tasks/${tasks[i].pk}/`), tasks[i])
@@ -96,7 +98,7 @@ export class Todo extends React.Component{
         })
         // todo learn exactly when this exicutes 
         // this could be exicuting first!!!
-        .then(this.updateTaskIndexsOnAPI(true))
+        .then(this.updateTasksOnAPI(true))
       }
     }
     
@@ -107,12 +109,11 @@ export class Todo extends React.Component{
         // concat returns a new array with whatever was passed in added on
         // key needs to be completely unique and unchanging
         // todo replace _key with value from api
-        let _key = Math.floor(Math.random()* 100000)
         let task = [{
           index: 0,
-          pk: _key,
           title: this.state.newTaskTitle,
           priority: this.state.newTaskPriority,
+          pk: null
         }]
         let _newTasks = task.concat(this.state.tasks)
         // update the index for each task
@@ -128,6 +129,7 @@ export class Todo extends React.Component{
         //todo change values with API call
       }
     }
+
     
     //todo add logic to change location of Tasks in state.tasks
     moveTask = (dragIndex, dropIndex) => {
@@ -142,12 +144,11 @@ export class Todo extends React.Component{
     }
     
     // remove task from list, also triggers API update
-    removeTask = (index) => {
-      let taskpk = this.state.tasks[index].pk
+    removeTask = (index, pk) => {
       let _tempTasks = [...this.state.tasks]
       _tempTasks.splice(index, 1)
       this.setState({tasks: _tempTasks})
-      this.deleteTaskFromAPI(taskpk)
+      this.deleteTaskFromAPI(pk)
     }
 
     deleteTaskFromAPI = (taskpk) => {
@@ -155,7 +156,7 @@ export class Todo extends React.Component{
         .then((response) => {
           console.log(response)
         })
-        .then(this.updateTaskIndexsOnAPI())
+        .then(this.updateTasksOnAPI())
     } 
     
     changeNewTaskTitle = (event) => {
@@ -182,7 +183,7 @@ export class Todo extends React.Component{
       _tempTasks[index].title = event.target.value
       this.setState({tasks: _tempTasks})
     }
-    
+
     renderTask = (task) => {
       // task.index = index
       return(
@@ -190,6 +191,7 @@ export class Todo extends React.Component{
           //key value not accessable to components
           //key does not coorelate with actual database key value
           key={task.pk}
+          pk={task.pk}
           index={task.index}
           title={task.title}
           priority={task.priority}
@@ -197,7 +199,7 @@ export class Todo extends React.Component{
           moveTask={this.moveTask}
           updateTitle={this.updateTitle}
           setPriority={this.setPriority}
-          updateAPI={this.updateAPI}
+          updateAPI={this.updateTasksOnAPI}
         />
       )
     }
@@ -209,6 +211,7 @@ export class Todo extends React.Component{
         this.shouldRequest = false
         this.getTasks()
       }
+
       return(
         <DndProvider backend={HTML5Backend} >
           <motion.div
