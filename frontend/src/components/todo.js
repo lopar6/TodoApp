@@ -67,14 +67,39 @@ export class Todo extends React.Component{
     //   })
     // }
 
-    //todo implement
-    addNewTasktoAPI = (task) => {
-      axios.post(APIurl.concat(`task/${task.pk}`), task)
+
+    // todo make sure this works
+    updateTaskIndexsOnAPI = (skipFirst = false) => {
+    // update index values for all tasks
+    for(let i = 0; i < this.state.tasks.length; i++){
+      // optional skipping first element if new element just created
+      if( i === 1 && skipFirst){ }
+      axios.post(APIurl.concat(`tasks/${this.state.tasks[i].pk}/`), this.state.tasks[i])
+      .then((response) =>{
+        console.log(response)
+        })
+      }
+    }
+    
+
+    postTaskstoAPI = (tasks) => {
+      // add new task
+      axios.post(APIurl.concat(`tasks/`), tasks[0])
+      .then((response) =>{
+        console.log(response)
+      })
+      // update index values for all other tasks
+      for(let i = 1; i < tasks.length; i++){
+        axios.post(APIurl.concat(`tasks/${tasks[i].pk}/`), tasks[i])
         .then((response) =>{
           console.log(response)
         })
+        // todo learn exactly when this exicutes 
+        // this could be exicuting first!!!
+        .then(this.updateTaskIndexsOnAPI(true))
+      }
     }
-
+    
     // dont need to bind method when using arrow functions
     // it helps Javascript understand the context
     addNewTask = (event) => {
@@ -90,15 +115,20 @@ export class Todo extends React.Component{
           priority: this.state.newTaskPriority,
         }]
         let _newTasks = task.concat(this.state.tasks)
+        // update the index for each task
+        for(let i = 0; i < _newTasks.length; i++){
+          _newTasks[i].index = i
+        }
+        
         this.setState({
           tasks: _newTasks,
           newTaskTitle: ''
         })
-        this.addNewTasktoAPI(task[0])
+        this.postTaskstoAPI(_newTasks)
         //todo change values with API call
       }
     }
-  
+    
     //todo add logic to change location of Tasks in state.tasks
     moveTask = (dragIndex, dropIndex) => {
       let _tempTasks = [...this.state.tasks]
@@ -107,15 +137,26 @@ export class Todo extends React.Component{
       _tempTasks.splice(dragIndex, 1)
       // add dragged task back in 
       _tempTasks.splice(dropIndex, 0, draggedTask)
-
+      
       this.setState({tasks: _tempTasks})
     }
-  
+    
+    // remove task from list, also triggers API update
     removeTask = (index) => {
+      let taskpk = this.state.tasks[index].pk
       let _tempTasks = [...this.state.tasks]
       _tempTasks.splice(index, 1)
       this.setState({tasks: _tempTasks})
+      this.deleteTaskFromAPI(taskpk)
     }
+
+    deleteTaskFromAPI = (taskpk) => {
+      axios.delete(APIurl.concat(`tasks/${taskpk}/`))
+        .then((response) => {
+          console.log(response)
+        })
+        .then(this.updateTaskIndexsOnAPI())
+    } 
     
     changeNewTaskTitle = (event) => {
       this.setState({ newTaskTitle: event.target.value})
@@ -142,14 +183,14 @@ export class Todo extends React.Component{
       this.setState({tasks: _tempTasks})
     }
     
-    renderTask(task, index){
-      task.index = index
+    renderTask = (task) => {
+      // task.index = index
       return(
         <Task 
           //key value not accessable to components
           //key does not coorelate with actual database key value
           key={task.pk}
-          index={index}
+          index={task.index}
           title={task.title}
           priority={task.priority}
           removeTask={this.removeTask}
@@ -163,7 +204,7 @@ export class Todo extends React.Component{
 
     // only get tasks from API when first loading the page
     shouldRequest = true
-    render(){
+    render = () => {
       if (this.shouldRequest){
         this.shouldRequest = false
         this.getTasks()
@@ -212,5 +253,5 @@ export class Todo extends React.Component{
         </DndProvider>
         )
       }
-      
     }
+  
