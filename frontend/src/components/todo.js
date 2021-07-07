@@ -48,7 +48,7 @@ export class Todo extends React.Component{
         }
         // sort the tasks by their index value
         //!fix this
-        _tempTasks.sort((task1, task2) => {return task1.index > task2.index? 1 : 0})
+        _tempTasks.sort((task1, task2) => {return task1.index > task2.index? 1 : -1})
         console.log(_tempTasks)
         this.setState({tasks: _tempTasks})
       })
@@ -140,6 +140,11 @@ export class Todo extends React.Component{
       // add dragged task back in 
       _tempTasks.splice(dropIndex, 0, draggedTask)
       
+      // set each index to proper location in array
+      for(let i = 0; i < _tempTasks.length; i++){
+        _tempTasks[i].index = i
+      }
+
       this.setState({tasks: _tempTasks})
     }
     
