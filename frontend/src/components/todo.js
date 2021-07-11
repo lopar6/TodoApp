@@ -10,7 +10,6 @@ import { PriorityButton } from './priority-button';
 import { cyclePriority } from '../services/cycle-priority';
 import { intToPriority } from '../services/intToPriority';
 
-
 // example of what a task looks like
 // task {
 //   index: 0,
@@ -40,66 +39,19 @@ export class Todo extends React.Component{
     getTasks = () => {
       axios.get(APIurl.concat("tasks/"))
       .then((res) => {
-        console.log(res)
-        let data = res.data
-        let _tempTasks = []
-        for(let i = 0; i < data.length; i++){
-          _tempTasks.splice(-1, 0, data[i])
-        }
-        // sort the tasks by their index value
-        //!fix this
-        _tempTasks.sort((task1, task2) => {return task1.index > task2.index? 1 : -1})
-        console.log(_tempTasks)
-        this.setState({tasks: _tempTasks})
+        res.data.sort((a, b) => {return a.index - b.index})
+        this.setState({tasks: res.data})
       })
     }
 
     // todo add error handling
-    // sends POST request to update every task on api to current state
-    // updateAPI = () => {
-    //   axios.post(APIurl.concat("tasks/"), this.state.tasks)
-    //     .then(function (response) {
-    //       console.log(response)
-    //     })
-    //     .catch(function (error) {
-    //       console.log(error)
-    //   })
-    // }
-
-
-    // todo make sure this works
-    updateTasksOnAPI = (skipFirst = false) => {
-    // update index values for all tasks
-    for(let i = 0; i < this.state.tasks.length; i++){
-      // optional skipping first element if new element just created
-      if( i === 1 && skipFirst){ }
-      axios.post(APIurl.concat(`tasks/${this.state.tasks[i].pk}/`), this.state.tasks[i])
-      .then((response) =>{
-        console.log(response)
-        })
-      }
-    }
-    
-    postTaskstoAPI = (tasks) => {
-      // add new task
-      axios.post(APIurl.concat(`tasks/`), tasks[0])
-      .then((response) => {
-        console.log(response)
-        let _tempTasks = [...this.state.tasks]
-        _tempTasks[0].pk = response.data.pk
-        this.setState({tasks: _tempTasks})
+    updateTasksOnAPI = (tasks = this.state.tasks) => {
+      // update index values for all tasks
+      return axios({
+        method: 'post',
+        url: APIurl.concat('tasks/batch/'),
+        data: tasks,
       })
-
-      // update index values for all other tasks
-      for(let i = 1; i < tasks.length; i++){
-        axios.post(APIurl.concat(`tasks/${tasks[i].pk}/`), tasks[i])
-        .then((response) =>{
-          console.log(response)
-        })
-        // todo learn exactly when this exicutes 
-        // this could be exicuting first!!!
-        .then(this.updateTasksOnAPI(true))
-      }
     }
     
     // dont need to bind method when using arrow functions
@@ -108,7 +60,6 @@ export class Todo extends React.Component{
       if(this.state.newTaskTitle && this.state.newTaskTitle !== ''){
         // concat returns a new array with whatever was passed in added on
         // key needs to be completely unique and unchanging
-        // todo replace _key with value from api
         let task = [{
           index: 0,
           title: this.state.newTaskTitle,
@@ -117,16 +68,34 @@ export class Todo extends React.Component{
         }]
         let _newTasks = task.concat(this.state.tasks)
         // update the index for each task
-        for(let i = 0; i < _newTasks.length; i++){
+        for(let i = 1; i < _newTasks.length; i++){
           _newTasks[i].index = i
         }
-        
         this.setState({
           tasks: _newTasks,
           newTaskTitle: ''
         })
-        this.postTaskstoAPI(_newTasks)
-        //todo change values with API call
+        // update API
+        // !this could be buggy and may need refactoring
+        this.updateTasksOnAPI(_newTasks).then((response) => { 
+          // loop through response data finding task at index 0, and local task with null pk value
+          // update local pk value 
+          let resposeDataIndex = null
+          let localTaskIndex = null
+          for(let i = 0; i < response.data.length; i++){
+            if (response.data[i].index === 0){
+              resposeDataIndex = i 
+            }
+            if (_newTasks[i].pk === null){
+              localTaskIndex = i
+            }
+          }
+          _newTasks[localTaskIndex].pk = response.data[resposeDataIndex].pk
+          this.setState({
+            tasks: _newTasks,
+          })
+          
+        })
       }
     }
 
