@@ -32,6 +32,15 @@ class TaskViewSet(viewsets.ViewSet):
             task.delete()
         return Response(status=status.HTTP_200_OK)
 
+    def partial_update(self, request, pk=None):
+        task = Task.objects.filter(id=pk).first()
+        if task is None:
+            return Response(None, stats=status.HTTP_404_NOT_FOUND)
+        task.priority = request.data.get('priority')
+        task.save()
+        serializer = TaskSerializer(task, many=False)
+        return Response(serializer.data , status=status.HTTP_200_OK)
+
     # example of good pattern
     # returns title with "/tasks/{pk}/title"
     @action(detail = True, methods = ['get'])
