@@ -37,7 +37,7 @@ export class Todo extends React.Component{
   
 
     getTasks = () => {
-      axios.get(APIurl.concat("tasks/"))
+      axios.get(APIurl + "tasks/")
       .then((res) => {
         res.data.sort((a, b) => {return a.index - b.index})
         this.setState({tasks: res.data})
@@ -49,7 +49,7 @@ export class Todo extends React.Component{
       // update index values for all tasks
       return axios({
         method: 'post',
-        url: APIurl.concat('tasks/batch/'),
+        url: APIurl + 'tasks/batch/',
         data: tasks,
       })
     }
@@ -126,7 +126,7 @@ export class Todo extends React.Component{
     }
 
     deleteTaskFromAPI = (taskpk) => {
-      axios.delete(APIurl.concat(`tasks/${taskpk}/`))
+      axios.delete(APIurl + `tasks/${taskpk}/`)
         .then((response) => {
           console.log(response)
         })
@@ -150,6 +150,14 @@ export class Todo extends React.Component{
       let _tempTasks = [...this.state.tasks]
       _tempTasks[index].priority = cyclePriority(_tempTasks[index].priority)
       this.setState({tasks: _tempTasks})
+
+      // update value of this one task on API
+      axios({
+        method: 'patch',
+        url: APIurl + `tasks/${this.state.tasks[index].pk}/`,
+        data: this.state.tasks[index],
+      })
+      // axios.patch(APIurl + `tasks/${this.state.tasks[index].pk}/`, this.state.tasks[index])
     }
   
     updateTitle = (event, index) => {
