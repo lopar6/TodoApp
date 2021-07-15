@@ -14,16 +14,14 @@ export function Task({index, pk, title, priority, removeTask, moveTask, updateTi
   useEffect(() => {
   }, [index, title, priority, index])
 
-  const [{isDragging}, drag] = useDrag(({
+  const [, drag] = useDrag(({
     type: 'Task',
     item: () => {
       return {index}
     },
     collect: (monitor) => {
-
       return {
         isDragging: !!monitor.isDragging(),
-        // todo change this to only passing index
       }
     },
     dropEffect: "move",
@@ -74,11 +72,12 @@ export function Task({index, pk, title, priority, removeTask, moveTask, updateTi
     }
   })
 
-  //todo make hover move things and drop write changes to DB
-  //  !wtf is this
   drag(drop(ref))
   return ( 
-    <div ref={ref} data-handler-id={handlerId} >
+    <div
+      ref={ref} 
+      data-handler-id={handlerId}
+      >
       <div className={`task-box ${intToPriority(priority)}-border`}
         onMouseOver={() => setButtonShow(true)}
         onMouseLeave={() => setTimeout(() => setButtonShow(false), 500)}

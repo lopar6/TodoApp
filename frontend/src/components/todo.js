@@ -99,8 +99,7 @@ export class Todo extends React.Component{
       }
     }
 
-    
-    //todo add logic to change location of Tasks in state.tasks
+    //TODO add drag drop animation
     moveTask = (dragIndex, dropIndex) => {
       let _tempTasks = [...this.state.tasks]
       const draggedTask = _tempTasks[dragIndex]
@@ -157,7 +156,6 @@ export class Todo extends React.Component{
         url: APIurl + `tasks/${this.state.tasks[index].pk}/`,
         data: this.state.tasks[index],
       })
-      // axios.patch(APIurl + `tasks/${this.state.tasks[index].pk}/`, this.state.tasks[index])
     }
   
     updateTitle = (event, index) => {
@@ -211,20 +209,24 @@ export class Todo extends React.Component{
                   id="new-task-title" 
                   placeholder="Enter a new task" 
                   onChange={this.changeNewTaskTitle} 
-                  value={this.state.newTaskTitle}
-                  >
+                  value={this.state.newTaskTitle}>
                 </input>
                 <div id="priority-buttons">
                     <PriorityButton 
                       priority={intToPriority(this.state.newTaskPriority)} 
                       click={this.changeNewTaskPriority}/>
-                    <input 
-                      type="button" 
-                      className={`input-button submit`} 
-                      value="save" 
-                      onClick={this.addNewTask}
-                      >
-                    </input>
+                    <motion.div
+                      whileHover={{
+                        scale: 1.05,
+                        transition: { duration: .2, },
+                      }}
+                      whileTap={{ scale: 0.9 }}>
+                      <input 
+                        type="button" 
+                        className={`input-button submit`} 
+                        value="save" 
+                        onClick={this.addNewTask}/>
+                    </motion.div>
                 </div>
               </form>
             </div>
