@@ -12,6 +12,7 @@ from todoApp.models import Task
 from todoApp.serializers import TaskSerializer
 
 class TaskViewSet(viewsets.ViewSet):
+    
 
     # overrde methods of viewsets called by default router
     def list(self, request):
@@ -27,15 +28,15 @@ class TaskViewSet(viewsets.ViewSet):
     def destroy(self, request, pk):
         task = Task.objects.filter(id=pk).first()
         if task is None:
-            return Response(None, stats=status.HTTP_404_NOT_FOUND)
+            return Response(None, status=status.HTTP_404_NOT_FOUND)
         else: 
             task.delete()
         return Response(status=status.HTTP_200_OK)
 
-    def partial_update(self, request, pk=None):
+    def patch(self, request, pk=None):
         task = Task.objects.filter(id=pk).first()
         if task is None:
-            return Response(None, stats=status.HTTP_404_NOT_FOUND)
+            return Response(None, status=status.HTTP_404_NOT_FOUND)
         task.priority = request.data.get('priority')
         task.save()
         serializer = TaskSerializer(task, many=False)
