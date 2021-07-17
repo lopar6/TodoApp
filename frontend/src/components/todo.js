@@ -35,13 +35,16 @@ export class Todo extends React.Component{
       } 
     }
   
+    fetchTasks = async() => {
+      return axios.get(APIurl + "tasks/")
+    }
 
     getTasks = () => {
-      axios.get(APIurl + "tasks/")
+      this.fetchTasks()
       .then((res) => {
         res.data.sort((a, b) => {return a.index - b.index})
         this.setState({tasks: res.data})
-      })
+      }).catch((response) => console.log(`NETWORK ERROR HAS OCCURED WHILE GETTING TASKS`))
     }
 
     // todo add error handling
@@ -51,7 +54,7 @@ export class Todo extends React.Component{
         method: 'post',
         url: APIurl + 'tasks/batch/',
         data: tasks,
-      })
+      }).catch(console.log("NETWORK ERROR HAS OCCURED WHILE UPDATING TASKS"))
     }
     
     // dont need to bind method when using arrow functions
