@@ -1,3 +1,2 @@
 # TodoApp
-To see this in action go to loganawesome.com/todo
-This web app was created to practice react, and creating a RESTful api in Django!
+This web app was created to learn react, and learn how to create a RESTful api in Django!
